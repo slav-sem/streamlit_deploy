@@ -1,6 +1,7 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
+import plotly.express as px
+import streamlit as st
 
 # Set page layout to wide
 st.set_page_config(layout='wide')
@@ -22,10 +23,10 @@ with tab1:
     st.write("This section provides a broad analysis of quality of life and economic factors worldwide.")
     ######## task 4 ################
     #   uploaded_file = st.file_uploader("global_development_data.csv", type=["csv"])
-    uploaded_file1 = st.file_uploader("global_development_data.csv", type=["csv"], key='2')
+    #uploaded_file1 = st.file_uploader("global_development_data.csv", type=["csv"], key='2')
 
-    if uploaded_file1 is not None:
-        df = pd.read_csv(uploaded_file1)
+    #if uploaded_file1 is not None:
+    df = pd.read_csv('global_development_data.csv')
     required_cols = {"year", "Life Expectancy (IHME)", "GDP per capita", "headcount_ratio_upper_mid_income_povline", "country"}
     
     if not required_cols.issubset(df.columns):
@@ -42,6 +43,33 @@ with tab1:
         median_gdp_per_capita = filtered_df["GDP per capita"].median()
         mean_poverty_rate = filtered_df["headcount_ratio_upper_mid_income_povline"].mean()
         num_countries = filtered_df["country"].nunique()
+        
+        # Key Metrics
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric(label="Mean Life Expectancy", value=round(mean_life_exp, 2))
+        with col2:
+            st.metric(label="Median GDP per Capita", value=round(median_gdp_per_capita, 2))
+        with col3:
+            st.metric(label="Mean Poverty Rate (Upper Middle Income)", value=round(mean_poverty_rate, 2))
+        with col4:
+            st.metric(label="Number of Countries", value=num_countries)
+    
+    
+    def plot_data(df, year):
+        fig = px.scatter(
+            df.query(f'year=={year}'),
+            x='GDP per capita',
+            y='Life Expectancy (IHME)',
+            size='Population',
+            color='country',
+            hover_name='country',
+            log_x=True,
+            size_max=60,)
+        return fig
+    fig = plot_data(df, selected_year)
+    st.plotly_chart(fig, theme='streamlit', use_container_width=True)
+        
     
 
 with tab2:
